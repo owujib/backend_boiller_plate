@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 
-export function UseMiddleware(middleware: RequestHandler | RequestHandler[]) {
+export function UseMiddleware(...middleware: RequestHandler[]) {
   return function (
     target: any,
     propertyKey?: string,

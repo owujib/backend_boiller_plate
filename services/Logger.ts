@@ -1,19 +1,19 @@
-import pino from 'pino';
+import pino from "pino";
 
-class Logger {
+export class Logger {
   private logger;
 
   constructor() {
     this.logger = pino({
       transport: {
-        target: 'pino-pretty',
+        target: "pino-pretty",
         options: {
           colorize: true, // Colorize the output for better readability
-          translateTime: 'SYS:standard', // Translate timestamp to local time
-          ignore: 'pid,hostname', // Ignore these fields
+          translateTime: "SYS:standard", // Translate timestamp to local time
+          ignore: "pid,hostname", // Ignore these fields
         },
       },
-      level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
+      level: process.env.NODE_ENV === "development" ? "debug" : "info",
     });
   }
 

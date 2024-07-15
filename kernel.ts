@@ -15,7 +15,11 @@ import {
   setGlobalMiddlewares,
   setRoutes,
 } from './utils/serverUtils';
-import { Controller, requestHandler } from './decorators/RouteHandler';
+import {
+  Controller,
+  RouteTypeInterface,
+  requestHandler as serverRequestHandler,
+} from './decorators/RouteHandler';
 import Logger from './services/Logger';
 
 process.env.TZ = 'Africa/Lagos';
@@ -53,16 +57,327 @@ class Kernel {
 
   routes() {
     setRoutes(this.app);
+
     this.app.get('/', (req, res, next) =>
       res.status(200).json({
         message: 'hello',
       }),
     );
+
+    /**catch 404 */
+    // this.app.all('*', (req, res, next)=>{
+    //   throw next(new Api)
+    // })
   }
 
   errorHandler() {
     setGlobalErrorHandler(this.app);
   }
+
+  // loadControllers() {
+  //   const controllersDir = path.join(__dirname, 'controllers');
+
+  //   fs.readdirSync(controllersDir).forEach((file) => {
+  //     const extension = path.extname(file);
+  //     const isControllerFile =
+  //       ['.ts', '.js'].includes(extension) && file !== 'BaseController.ts';
+
+  //     if (isControllerFile) {
+  //       const controllerModule = require(path.join(controllersDir, file));
+
+  //       if (controllerModule && controllerModule.default) {
+  //         const ControllerClass = controllerModule.default;
+  //         const ClassPrototype = ControllerClass.prototype;
+  //         if (ClassPrototype && ClassPrototype.basePath) {
+  //           const basePath = ClassPrototype.basePath;
+  //           const routes = ControllerClass.prototype.routes;
+  //           const requestHandlerDecorator: any[] = [],
+  //             serverRoutes: any[] = [];
+  //           //map routes
+  //           if (Array.isArray(routes)) {
+  //             routes.map((route: RouteTypeInterface) => {
+  //               const method = route.method.toLowerCase();
+  //               const fullPath = `${ClassPrototype.basePath}${route.path}`;
+  //               const handlersMiddleware: RequestHandler[] = [];
+
+  //               const requestHandler = ClassPrototype.requestMiddleware;
+  //               const middleware = ClassPrototype.middleware;
+
+  //               //map request handlersMiddleware
+  //               if (requestHandler[route.key]) {
+  //                 const requestHandlerMiddleware =
+  //                   middleware && middleware[route.key];
+
+  //                 const wrappedRequestMiddlewareHandler = {
+  //                   ...route,
+  //                   fn: serverRequestHandler()(ClassPrototype, route.key, {
+  //                     value: ClassPrototype[route.key],
+  //                   }),
+  //                 };
+  //                 Logger.info(
+  //                   `${method.toUpperCase()}: ${fullPath} mapped to Requesthandler middleware`,
+  //                 );
+
+  //                 const middlewares = (requestHandlerMiddleware || []).map(
+  //                   (handler: any) => {
+  //                     return (
+  //                       req: Request,
+  //                       res: Response,
+  //                       next: NextFunction,
+  //                     ) => {
+  //                       return handler(req, res, next);
+  //                     };
+  //                   },
+  //                 );
+  //                 requestHandler[route.key].map((routeHandler: any) => {
+  //                   handlersMiddleware.push(
+  //                     (req: Request, res: Response, next: NextFunction) => {
+  //                       routeHandler(req, res, next);
+  //                     },
+  //                   );
+  //                 });
+
+  //                 requestHandlerDecorator.push({
+  //                   handlersMiddleware,
+  //                   middlewares,
+  //                   wrappedRequestMiddlewareHandler,
+  //                 });
+
+  //                 if (route.key in requestHandler) {
+  //                   const getRouteIndex = this.existInRoutes(
+  //                     route.key,
+  //                     ClassPrototype.routes,
+  //                   );
+  //                   delete ClassPrototype.requestMiddleware[route.key];
+
+  //                   ClassPrototype.middleware &&
+  //                   ClassPrototype.middleware[route.key]
+  //                     ? delete ClassPrototype.middleware[route.key]
+  //                     : null;
+  //                   ClassPrototype.routes.splice(getRouteIndex.index, 1);
+  //                 }
+
+  //                 return { handlersMiddleware, middleware, requestHandler };
+  //               }
+  //             });
+
+  //             ClassPrototype.routes.map((route: RouteTypeInterface) => {
+  //               const method = route.method.toLowerCase();
+  //               const fullPath = `${basePath}${route.path}`;
+  //               const handlers: RequestHandler[] = [];
+  //               const routes: any = {};
+  //               const middleware =
+  //                 ClassPrototype.middleware &&
+  //                 ClassPrototype.middleware[route.key];
+
+  //               (middleware || []).map((el: any) => {
+  //                 handlers.push((req, res, next) => {
+  //                   el(req, res, next);
+  //                 });
+  //               });
+
+  //               routes.key = route.key;
+  //               routes.path = route.path;
+  //               routes.method = route.method;
+  //               routes.fn = ClassPrototype[route.key].bind(ClassPrototype);
+
+  //               serverRoutes.push({ handlers, routes });
+
+  //               Logger.info(
+  //                 `${method.toUpperCase()}: ${fullPath} to Server Routes`,
+  //               );
+  //               // Bind the handler to the controller instance and pass it as middleware
+  //               // (this.app as any)[method.toLowerCase()](
+  //               //   fullPath,
+  //               //   handlers,
+  //               //   // wrappedHandler,
+  //               // );
+  //             });
+  //           }
+
+  //           //map routes to server
+  //           serverRoutes.map(({ handlers, routes }) => {
+  //             (this.app as any)[routes.method?.toLowerCase()](
+  //               `${basePath}${routes.path}`,
+  //               handlers,
+  //               routes.fn,
+  //             );
+  //           });
+
+  //           requestHandlerDecorator.map(
+  //             ({
+  //               handlersMiddleware,
+  //               middlewares,
+  //               wrappedRequestMiddlewareHandler,
+  //             }) => {
+  //               (this.app as any)[
+  //                 wrappedRequestMiddlewareHandler.method?.toLowerCase()
+  //               ](
+  //                 `${basePath}${wrappedRequestMiddlewareHandler.path}`,
+  //                 [...middlewares, ...handlersMiddleware],
+  //                 wrappedRequestMiddlewareHandler.fn,
+  //               );
+  //             },
+  //           );
+  //         } else {
+  //           Logger.warn(
+  //             `Controller ${ControllerClass.name} does not have a basePath property.`,
+  //           );
+  //           process.exit(0);
+  //         }
+  //       } else {
+  //         Logger.warn(
+  //           `Controller module not found or does not have a default export.`,
+  //         );
+  //         process.exit(0);
+  //       }
+  //     }
+  //   });
+  // }
+
+  // loadControllers() {
+  //   const controllersDir = path.join(__dirname, 'controllers');
+
+  //   fs.readdirSync(controllersDir).forEach((file) => {
+  //     const extension = path.extname(file);
+  //     const isControllerFile =
+  //       ['.ts', '.js'].includes(extension) && file !== 'BaseController.ts';
+
+  //     if (isControllerFile) {
+  //       const controllerModule = require(path.join(controllersDir, file));
+
+  //       if (controllerModule && controllerModule.default) {
+  //         const ControllerClass = controllerModule.default;
+  //         const controllerInstance = new ControllerClass();
+  //         const ClassPrototype = ControllerClass.prototype;
+
+  //         if (ClassPrototype && ClassPrototype.basePath) {
+  //           const basePath = ClassPrototype.basePath;
+  //           const routes = ClassPrototype.routes || [];
+  //           const serverRoutes: any[] = [];
+  //           const requestHandlerDecorator: any[] = [];
+
+  //           // Separate out requestHandlerDecorator routes
+  //           routes.forEach((route: RouteTypeInterface) => {
+  //             const method = route.method.toLowerCase();
+  //             const fullPath = `${basePath}${route.path}`;
+  //             const handlersMiddleware: RequestHandler[] = [];
+  //             const requestHandler = ClassPrototype.requestMiddleware || {};
+  //             const middleware = ClassPrototype.middleware || {};
+
+  //             if (requestHandler[route.key]) {
+  //               const requestHandlerMiddleware = middleware[route.key] || [];
+
+  //               const middlewares = requestHandlerMiddleware.map(
+  //                 (handler: any) => {
+  //                   return (req: Request, res: Response, next: NextFunction) =>
+  //                     handler(req, res, next);
+  //                 },
+  //               );
+
+  //               requestHandler[route.key].forEach((routeHandler: any) => {
+  //                 handlersMiddleware.push(
+  //                   (req: Request, res: Response, next: NextFunction) => {
+  //                     routeHandler(req, res, next);
+  //                   },
+  //                 );
+  //               });
+
+  //               requestHandlerDecorator.push({
+  //                 method,
+  //                 path: fullPath,
+  //                 middlewares,
+  //                 handlersMiddleware,
+  //                 fn: serverRequestHandler()(ClassPrototype, route.key, {
+  //                   value: ClassPrototype[route.key],
+  //                 }),
+  //               });
+
+  //               Logger.info(
+  //                 `${method.toUpperCase()}: ${fullPath} mapped to RequestHandler middleware`,
+  //               );
+
+  //               if (route.key in requestHandler) {
+  //                 const getRouteIndex = this.existInRoutes(
+  //                   route.key,
+  //                   ClassPrototype.routes,
+  //                 );
+  //                 delete ClassPrototype.requestMiddleware[route.key];
+
+  //                 ClassPrototype.middleware &&
+  //                 ClassPrototype.middleware[route.key]
+  //                   ? delete ClassPrototype.middleware[route.key]
+  //                   : null;
+  //                 ClassPrototype.routes.splice(getRouteIndex.index, 1);
+  //               }
+  //             }
+  //           });
+
+  //           // Map regular routes
+  //           routes.forEach((route: RouteTypeInterface) => {
+  //             const method = route.method.toLowerCase();
+  //             const fullPath = `${basePath}${route.path}`;
+  //             const handlers: RequestHandler[] = [];
+  //             const routes: any = {};
+
+  //             const middleware = ClassPrototype.middleware?.[route.key] || [];
+
+  //             (middleware || []).map((el: any) => {
+  //               handlers.push((req, res, next) => {
+  //                 el(req, res, next);
+  //               });
+  //             });
+
+  //             // handlers.push(
+  //             //   controllerInstance[route.key].bind(controllerInstance),
+  //             // );
+
+  //             // serverRoutes.push({ method, path: fullPath, handlers });
+
+  //             routes.key = route.key;
+  //             routes.path = route.path;
+  //             routes.method = route.method;
+  //             routes.fn = ClassPrototype[route.key].bind(ClassPrototype);
+
+  //             serverRoutes.push({ handlers, routes });
+
+  //             Logger.info(
+  //               `${method.toUpperCase()}: ${fullPath} mapped to server routes`,
+  //             );
+  //           });
+
+  //           // Register serverRoutes
+  //           serverRoutes.map(({ handlers, routes }) => {
+  //             (this.app as any)[routes.method?.toLowerCase()](
+  //               `${basePath}${routes.path}`,
+  //               handlers,
+  //               routes.fn,
+  //             );
+  //           });
+
+  //           // Register requestHandlerDecorator routes
+  //           requestHandlerDecorator.forEach(
+  //             ({ method, path, middlewares, handlersMiddleware, fn }) => {
+  //               (this.app as any)[method](
+  //                 path,
+  //                 [...middlewares, ...handlersMiddleware],
+  //                 fn.value,
+  //               );
+  //             },
+  //           );
+  //         } else {
+  //           Logger.warn(
+  //             `Controller ${ControllerClass.name} does not have a basePath property.`,
+  //           );
+  //         }
+  //       } else {
+  //         Logger.warn(
+  //           `Controller module not found or does not have a default export.`,
+  //         );
+  //       }
+  //     }
+  //   });
+  // }
 
   loadControllers() {
     const controllersDir = path.join(__dirname, 'controllers');
@@ -77,59 +392,110 @@ class Kernel {
 
         if (controllerModule && controllerModule.default) {
           const ControllerClass = controllerModule.default;
+          const controllerInstance = new ControllerClass();
+          const ClassPrototype = ControllerClass.prototype;
 
-          if (ControllerClass.prototype && ControllerClass.prototype.basePath) {
-            if (
-              ControllerClass.prototype.routes &&
-              ControllerClass.prototype.routes.length > 0
-            ) {
-              ControllerClass.prototype.routes.forEach((route: any) => {
-                const method = route.method.toLowerCase();
-                const fullPath = `${ControllerClass.prototype.basePath}${route.path}`;
-                const handlers: RequestHandler[] = [];
+          if (ClassPrototype && ClassPrototype.basePath) {
+            const basePath = ClassPrototype.basePath;
+            const routes = ClassPrototype.routes || [];
 
-                const classMiddleware = ControllerClass.middleware;
+            // Arrays to store routes
+            const serverRoutes: any[] = [];
+            const requestHandlerDecorator: any[] = [];
 
-                const middleWareHandler =
-                  ControllerClass.prototype.middleware &&
-                  ControllerClass.prototype.middleware[route.key]
-                    ? ControllerClass.prototype.middleware[route.key]
-                    : [];
+            // Iterate over routes defined in the controller
+            routes.forEach((route: RouteTypeInterface) => {
+              const method = route.method.toLowerCase();
+              const fullPath = `${basePath}${route.path}`;
 
-                if (middleWareHandler && middleWareHandler.length > 0) {
-                  middleWareHandler?.forEach((mw: RequestHandler) => {
-                    handlers.push(mw);
-                  });
+              // Check if there are requestHandler middlewares
+              const requestHandler = ClassPrototype.requestMiddleware || {};
+              const middleware = ClassPrototype.middleware || {};
+
+              if (requestHandler[route.key]) {
+                // Handle routes with requestHandler decorators
+                const requestHandlerMiddleware = middleware[route.key] || [];
+
+                const middlewares = requestHandlerMiddleware.map(
+                  (handler: any) => {
+                    return (req: Request, res: Response, next: NextFunction) =>
+                      handler(req, res, next);
+                  },
+                );
+
+                const handlersMiddleware: RequestHandler[] = [];
+                requestHandler[route.key].forEach((routeHandler: any) => {
+                  handlersMiddleware.push(
+                    (req: Request, res: Response, next: NextFunction) => {
+                      routeHandler(req, res, next);
+                    },
+                  );
+                });
+
+                // Store the decorated request handler route
+                requestHandlerDecorator.push({
+                  method,
+                  path: fullPath,
+                  middlewares,
+                  handlersMiddleware,
+                  fn: serverRequestHandler()(ClassPrototype, route.key, {
+                    value: ClassPrototype[route.key],
+                  }),
+                });
+
+                // Remove requestHandler middleware after processing
+                delete ClassPrototype.requestMiddleware[route.key];
+                if (
+                  ClassPrototype.middleware &&
+                  ClassPrototype.middleware[route.key]
+                ) {
+                  delete ClassPrototype.middleware[route.key];
                 }
+              } else {
+                // Handle regular server routes
+                const handlers: RequestHandler[] = [];
+                const middleware =
+                  ClassPrototype.middleware &&
+                  ClassPrototype.middleware[route.key];
 
-                // Wrap the handler with the requestHandler decorator
-                const wrappedHandler = requestHandler()(
-                  ControllerClass.prototype,
-                  route.key,
-                  { value: ControllerClass.prototype[route.key] },
-                );
+                (middleware || []).map((el: any) => {
+                  handlers.push((req, res, next) => {
+                    el(req, res, next);
+                  });
+                });
 
-                // console.log({
-                //   wrappedHandler,
-                //   handlers,
-                //   middleWareHandler,
-                //   classMiddleware,
+                serverRoutes.push({
+                  handlers,
+                  ...route,
+                  fn: ClassPrototype[route.key].bind(ClassPrototype),
+                });
+                // serverRoutes.push({
+                //   method,
+                //   path: fullPath,
+                //   fn: ClassPrototype[route.key].bind(controllerInstance),
                 // });
+              }
+            });
 
-                Logger.info(
-                  `${method.toUpperCase()}: ${route.path} on  ${
-                    ControllerClass.name
-                  }`,
-                );
+            // Register all server routes
+            serverRoutes.forEach(({ method, path, key, handlers, fn }) => {
+              (this.app as any)[method.toLowerCase()](
+                `${basePath}${path}`,
+                handlers,
+                fn,
+              );
+            });
 
-                // Bind the handler to the controller instance and pass it as middleware
+            // Register requestHandlerDecorator routes
+            requestHandlerDecorator.forEach(
+              ({ method, path, middlewares, handlersMiddleware, fn }) => {
                 (this.app as any)[method.toLowerCase()](
-                  fullPath,
-                  ...handlers,
-                  wrappedHandler,
+                  path,
+                  [...middlewares, ...handlersMiddleware],
+                  fn.value,
                 );
-              });
-            }
+              },
+            );
           } else {
             Logger.warn(
               `Controller ${ControllerClass.name} does not have a basePath property.`,
@@ -198,6 +564,17 @@ class Kernel {
     };
 
     next();
+  }
+
+  existInRoutes(
+    propertyKey: string,
+    arr: RouteTypeInterface[],
+  ): { payload: RouteTypeInterface | null; index: number } {
+    const index = arr.findIndex((object) => object.key === propertyKey);
+    if (index !== -1) {
+      return { payload: arr[index], index };
+    }
+    return { payload: null, index: -1 };
   }
 }
 
