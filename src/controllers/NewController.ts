@@ -6,6 +6,7 @@ const blow = (req: Request, res: Response, next: NextFunction) => {
   console.log('New COntroller ');
   next();
 };
+
 @Controller('/api/new')
 class NewController {
   @Get('/')

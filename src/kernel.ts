@@ -294,3 +294,22 @@ class Kernel {
 }
 
 export default new Kernel().app;
+
+// const config = {
+//   orm: 'sequelize', // or 'typeorm'
+//   // other database config options
+// };
+
+// async function main() {
+//   const dbProvider: IDatabaseProvider = DatabaseFactory.create(config);
+//   await dbProvider.connect();
+
+//   // Use the repository for some entity
+//   const userRepository = dbProvider.getRepository(User);
+
+//   // Continue with your application logic
+// }
+
+// main().catch((error) => {
+//   console.error('Failed to start the application:', error);
+// });
