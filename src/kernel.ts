@@ -21,6 +21,11 @@ import {
   requestHandler as serverRequestHandler,
 } from './decorators/RouteHandler';
 import Logger from './services/Logger';
+// import Logger from './services/Logger';
+// import LoggerProvider from './providers/LogProver';
+// import DatabaseProvider from './providers/DatabaseProviders';
+// import MiddlewareProvider from './providers/MiddlewareProviders';
+// import AuthProvider from './providers/AuthProviders';
 
 process.env.TZ = 'Africa/Lagos';
 
@@ -293,7 +298,7 @@ class Kernel {
   }
 }
 
-export default new Kernel().app;
+export default Kernel;
 
 // const config = {
 //   orm: 'sequelize', // or 'typeorm'

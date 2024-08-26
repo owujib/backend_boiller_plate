@@ -2,7 +2,7 @@
   "name": "express-custom-template",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "ts-node command/cli.ts",
@@ -27,7 +27,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "bull": "^4.16.0",
+    "bull": "^4.16.0",  
     "commander": "^12.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.4",
