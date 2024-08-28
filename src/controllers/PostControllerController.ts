@@ -1,7 +1,7 @@
-import { Controller, Get, requestHandler } from '../decorators/RouteHandler';
+import { Controller, Get, Post, requestHandler } from '../core';
 import { NextFunction, Request, Response, query } from 'express';
 
-@Controller('/api/postcontroller')
+@Controller('/api/post')
 class PostControllerController {
   @requestHandler()
   @Get('/')

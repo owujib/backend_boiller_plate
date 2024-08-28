@@ -6,40 +6,29 @@ import express, {
   Response,
   RequestHandler,
 } from 'express';
-import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
-import morgan from 'morgan';
-import {
-  setGlobalErrorHandler,
-  setGlobalMiddlewares,
-  setRoutes,
-} from './utils/serverUtils';
+import { setGlobalErrorHandler } from './utils/serverUtils';
 import {
   Controller,
   RouteTypeInterface,
   requestHandler as serverRequestHandler,
 } from './decorators/RouteHandler';
 import Logger from './services/Logger';
-// import Logger from './services/Logger';
-// import LoggerProvider from './providers/LogProver';
-// import DatabaseProvider from './providers/DatabaseProviders';
-// import MiddlewareProvider from './providers/MiddlewareProviders';
-// import AuthProvider from './providers/AuthProviders';
+import { IServerConfig } from './interface/IServerConfig';
 
 process.env.TZ = 'Africa/Lagos';
 
 class Kernel {
   app: express.Application;
 
-  constructor() {
+  constructor(private config: IServerConfig) {
     this.app = express();
     this.middlewares();
-    this.webhooks();
-    this.routes();
     this.loadControllers();
     this.loadRoutes();
     this.errorHandler();
+    this.config = config;
 
     // if (fileConfig.default === 'local') {
     //   const dir = process.env.UPLOADS_DIR!;
@@ -49,39 +38,21 @@ class Kernel {
     // }
   }
 
-  middlewares() {
-    setGlobalMiddlewares(this.app);
-    this.app.set('views', path.join(__dirname, '../views'));
-    this.app.set('view engine', 'ejs');
-    this.app.use(express.json());
-    this.app.set('PORT', process.env.PORT || 5001);
-    this.app.set('NODE_ENV', process.env.NODE_ENV);
+  private middlewares() {
+    this.setMiddleware(this.app);
     this.app.use(this.responseInterceptor);
   }
 
-  webhooks() {}
-
-  routes() {
-    setRoutes(this.app);
-
-    this.app.get('/', (req, res, next) =>
-      res.status(200).json({
-        message: 'hello',
-      }),
-    );
-
-    /**catch 404 */
-    // this.app.all('*', (req, res, next)=>{
-    //   throw next(new Api)
-    // })
-  }
-
   errorHandler() {
-    setGlobalErrorHandler(this.app);
+    this.app;
   }
+
+  setMiddleware(app: express.Application) {}
 
   loadRoutes() {
-    const routesDir = path.join(__dirname, 'routes');
+    const routesDir = this.config.routesDir
+      ? this.config.routesDir
+      : path.join(__dirname, 'routes');
 
     fs.readdirSync(routesDir).forEach((file) => {
       const extname = path.extname(file);
@@ -100,7 +71,9 @@ class Kernel {
   }
 
   loadControllers() {
-    const controllersDir = path.join(__dirname, 'controllers');
+    const controllersDir = this.config.controllersDir
+      ? this.config.controllersDir
+      : path.join(__dirname, 'controllers');
 
     fs.readdirSync(controllersDir).forEach((file) => {
       const extension = path.extname(file);
@@ -189,11 +162,6 @@ class Kernel {
                   ...route,
                   fn: ClassPrototype[route.key].bind(ClassPrototype),
                 });
-                // serverRoutes.push({
-                //   method,
-                //   path: fullPath,
-                //   fn: ClassPrototype[route.key].bind(controllerInstance),
-                // });
               }
             });
 
@@ -221,11 +189,12 @@ class Kernel {
               `Controller ${ControllerClass.name} does not have a basePath property.`,
             );
           }
-        } else {
-          Logger.warn(
-            `Controller module not found or does not have a default export.`,
-          );
         }
+        // else {
+        //   Logger.warn(
+        //     `Controller module not found or does not have a default export.`,
+        //   );
+        // }
       }
     });
   }

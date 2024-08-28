@@ -1,0 +1,13 @@
+import { kernelConfig } from '../config/kernel';
+import { CLIApp } from './cli';
+
+const cliApp = new CLIApp(kernelConfig);
+cliApp.run();
+
+// Run the CLI application
+// const cliApp = new CLIApp();
+// cliApp.run();
+
+// my-cli-tool --controller MyController --controllers-path ./src/controllers
+// my-cli-tool --route myRoute --routes-path ./src/routes
+// my-cli-tool --provider MyProvider --providers-path ./src/providers

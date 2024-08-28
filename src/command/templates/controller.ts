@@ -1,9 +1,9 @@
-export default function controllerTemplate (name: string) {
+export default function controllerTemplate(name: string) {
   return `import { Controller, Get, requestHandler } from '../decorators/RouteHandler';
 import { Request, Response } from 'express';
 
 @Controller('/api/${name.toLowerCase()}')
-class ${name}Controller {
+class ${name} {
   @requestHandler()
   @Get('/')
   public sendMessage() {
