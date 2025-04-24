@@ -1,4 +1,5 @@
 import Kernel from './kernel';
+import cli from './command/cli';
 // import Logger from './services/Logger';
 
 // const PORT = Kernel.get('PORT');
@@ -8,7 +9,7 @@ import Kernel from './kernel';
 // });
 
 export const app = Kernel
-
+export const commands = cli;
 export * from './decorators';
 export * from './providers';
 export * from './utils'

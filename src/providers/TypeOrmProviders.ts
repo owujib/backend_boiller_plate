@@ -1,7 +1,7 @@
 // TypeORMProvider.ts
 import { DataSource, Repository } from 'typeorm';
 import { IDatabaseProvider } from '../interface/IDataProvider';
- 
+
 export class TypeORMProvider implements IDatabaseProvider {
   private dataSource: DataSource;
 

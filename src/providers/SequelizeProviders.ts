@@ -29,7 +29,7 @@ export class SequelizeProvider implements IDatabaseProvider {
   }
 
   getRepository<T>(entity: new () => T): any {
-    return this.sequelize.getRepository(entity);
+    return this.sequelize.getRepository(entity as any);
   }
 
   // Add other methods as needed

@@ -1,5 +1,5 @@
 import session from 'express-session';
-
+import { Express } from 'express'
 class SessionProvider {
   public static setupSession(app: Express): void {
     app.use(

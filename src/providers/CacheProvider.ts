@@ -1,7 +1,7 @@
 import redis from 'redis';
 
 class CacheProvider {
-  private client: redis.RedisClient;
+  private client: any;
 
   constructor() {
     this.client = redis.createClient();
