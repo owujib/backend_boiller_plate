@@ -24,10 +24,21 @@ import Logger from './services/Logger';
 
 process.env.TZ = 'Africa/Lagos';
 
-class Kernel {
-  app: express.Application;
+interface KernelOptions {
+  controllersPath?: string;
+  routesPath?: string;
+  viewsPath?: string;
+}
 
-  constructor() {
+export class Kernel {
+  app: express.Application;
+  routesDir: string
+  controllersDir: string
+
+  constructor(options?: KernelOptions) {
+
+    this.controllersDir = options?.controllersPath ?? 'controllers'
+    this.routesDir = options?.routesPath ?? 'routes';
     this.app = express();
     this.middlewares();
     this.webhooks();
@@ -54,7 +65,7 @@ class Kernel {
     this.app.use(this.responseInterceptor);
   }
 
-  webhooks() {}
+  webhooks() { }
 
   routes() {
     setRoutes(this.app);
@@ -76,13 +87,19 @@ class Kernel {
   }
 
   loadRoutes() {
-    const routesDir = path.join(__dirname, 'routes');
+    if (!fs.existsSync(this.routesDir)) {
+      Logger.warn(`Routes directory not found at ${this.routesDir}`);
+      return;
+    }
 
-    fs.readdirSync(routesDir).forEach((file) => {
+    fs.readdirSync(this.routesDir).forEach((file) => {
       const extname = path.extname(file);
       if (extname === '.ts' || extname === '.js') {
         if (file !== 'index.ts') {
-          const routeModule = require(path.join(routesDir, file)).default;
+
+          console.log(path.join(this.routesDir, file))
+
+          const routeModule = require(path.join(this.routesDir, file)).default;
 
           // Mount the router from each route module
           if (routeModule && typeof routeModule === 'function') {
@@ -95,15 +112,22 @@ class Kernel {
   }
 
   loadControllers() {
-    const controllersDir = path.join(__dirname, 'controllers');
+    if (!fs.existsSync(this.controllersDir)) {
+      Logger.warn(`Controllers directory not found at ${this.controllersDir}`);
+      return;
+    }
 
-    fs.readdirSync(controllersDir).forEach((file) => {
+
+    fs.readdirSync(this.controllersDir).forEach((file) => {
       const extension = path.extname(file);
       const isControllerFile =
         ['.ts', '.js'].includes(extension) && file !== 'BaseController.ts';
 
       if (isControllerFile) {
-        const controllerModule = require(path.join(controllersDir, file));
+        const controllerModule = require(path.join(this.controllersDir, file));
+
+        console.log(path.join(this.routesDir, file))
+
 
         if (controllerModule && controllerModule.default) {
           const ControllerClass = controllerModule.default;
@@ -225,37 +249,21 @@ class Kernel {
     });
   }
 
-  responseInterceptor(req: Request, res: Response, next: NextFunction) {
-    // const originalJson = res.json;
-    // const originalSend = res.send;
 
-    // res.json = function (body: any) {
-    //   body.timestamp = Date.now();
-    //   return originalJson.call(this, body);
-    // };
-
-    // res.send = function (body: any) {
-    //   if (typeof body === 'object') {
-    //     body.timestamp = Date.now();
-    //     body.success = true;
-    //   }
-    //   return originalSend.call(this, body);
-    // };
-
-    // Store reference to original response methods
+  responseJsonInterceptor(req: Request, res: Response, next: NextFunction) {
     const originalJson = res.json;
-    const originalSend = res.send;
 
-    // Override json method
     res.json = function (body: any) {
-      // Add timestamp and success fields to JSON response
-      if (typeof body === 'object') {
-        body.timestamp = Date.now();
-        body.success = true;
-      }
-      // Call the original json method
       return originalJson.call(this, body);
     };
+
+    next();
+  }
+
+
+  responseBodyInterceptor(req: Request, res: Response, next: NextFunction) {
+
+    const originalSend = res.send;
 
     // Override send method
     res.send = function (body: any) {
@@ -293,7 +301,6 @@ class Kernel {
   }
 }
 
-export default new Kernel().app;
 
 // const config = {
 //   orm: 'sequelize', // or 'typeorm'

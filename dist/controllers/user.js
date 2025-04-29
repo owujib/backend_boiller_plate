@@ -10,36 +10,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const RouteHandler_1 = require("../decorators/RouteHandler");
-const blow = (req, res, next) => {
-    console.log('New COntroller ');
-    next();
-};
-let NewController = class NewController {
+let UserController = class UserController {
     sendMessage() {
         const message = { data: 'Hello world' };
         return message;
     }
-    getSecondNew(req, res, next) {
-        return res.status(200).json({
-            message: req.params.id,
-        });
-    }
 };
 __decorate([
+    (0, RouteHandler_1.requestHandler)(),
     (0, RouteHandler_1.Get)('/'),
-    (0, RouteHandler_1.requestHandler)(blow),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], NewController.prototype, "sendMessage", null);
-__decorate([
-    (0, RouteHandler_1.Get)('/:id'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
-    __metadata("design:returntype", void 0)
-], NewController.prototype, "getSecondNew", null);
-NewController = __decorate([
-    (0, RouteHandler_1.Controller)('/api/new')
-], NewController);
-exports.default = NewController;
-//# sourceMappingURL=NewController.js.map
+], UserController.prototype, "sendMessage", null);
+UserController = __decorate([
+    (0, RouteHandler_1.Controller)('/api/${name.toLowerCase()}')
+], UserController);
+exports.default = UserController;
+//# sourceMappingURL=user.js.map

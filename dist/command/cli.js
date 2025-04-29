@@ -46,12 +46,18 @@ function generateRoute(routePath) {
     const templateContent = fs.readFileSync(templatePath, 'utf8');
     const template = handlebars.compile(templateContent);
     const routeCode = template({ path: routePath });
+    if (!fs.existsSync('routes')) {
+        fs.mkdirSync('routes');
+    }
     const filePath = path.join(process.cwd(), 'routes', `${routePath}.js`);
     fs.writeFileSync(filePath, routeCode);
     console.log(`Route ${routePath} generated at ${filePath}`);
 }
 function generateController(name) {
     const controllerContent = (0, controller_1.default)(name);
+    if (!fs.existsSync('controllers')) {
+        fs.mkdirSync('controllers');
+    }
     const filePath = path.join(process.cwd(), 'controllers', `${name}Controller.ts`);
     fs.writeFileSync(filePath, controllerContent);
     console.log(`Controller ${name} generated at ${filePath}`);
@@ -69,5 +75,5 @@ function main() {
         program.help();
     }
 }
-main();
+exports.default = main();
 //# sourceMappingURL=cli.js.map

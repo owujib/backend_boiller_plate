@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Logger = void 0;
 const pino_1 = __importDefault(require("pino"));
 class Logger {
+    logger;
     constructor() {
         this.logger = (0, pino_1.default)({
             transport: {

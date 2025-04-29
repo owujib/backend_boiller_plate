@@ -25,6 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __importStar(require("path"));
 class ServerConfigProvider {
+    config;
     constructor(options) {
         this.config = {
             routesDir: path.resolve(options.routesDir),

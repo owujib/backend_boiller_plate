@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const bull_1 = __importDefault(require("bull"));
 class QueueProvider {
+    queue;
     constructor(queueName, redisUrl) {
         this.queue = new bull_1.default(queueName, redisUrl);
     }

@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Kernel = void 0;
 require("reflect-metadata");
 require("dotenv/config");
 const express_1 = __importDefault(require("express"));
@@ -13,7 +14,12 @@ const RouteHandler_1 = require("./decorators/RouteHandler");
 const Logger_1 = __importDefault(require("./services/Logger"));
 process.env.TZ = 'Africa/Lagos';
 class Kernel {
-    constructor() {
+    app;
+    routesDir;
+    controllersDir;
+    constructor(options) {
+        this.controllersDir = options?.controllersPath ?? 'controllers';
+        this.routesDir = options?.routesPath ?? 'routes';
         this.app = (0, express_1.default)();
         this.middlewares();
         this.webhooks();
@@ -52,12 +58,16 @@ class Kernel {
         (0, serverUtils_1.setGlobalErrorHandler)(this.app);
     }
     loadRoutes() {
-        const routesDir = path_1.default.join(__dirname, 'routes');
-        fs_1.default.readdirSync(routesDir).forEach((file) => {
+        if (!fs_1.default.existsSync(this.routesDir)) {
+            Logger_1.default.warn(`Routes directory not found at ${this.routesDir}`);
+            return;
+        }
+        fs_1.default.readdirSync(this.routesDir).forEach((file) => {
             const extname = path_1.default.extname(file);
             if (extname === '.ts' || extname === '.js') {
                 if (file !== 'index.ts') {
-                    const routeModule = require(path_1.default.join(routesDir, file)).default;
+                    console.log(path_1.default.join(this.routesDir, file));
+                    const routeModule = require(path_1.default.join(this.routesDir, file)).default;
                     // Mount the router from each route module
                     if (routeModule && typeof routeModule === 'function') {
                         const basePath = `/${file.replace('.ts', '').replace('.js', '')}`;
@@ -68,12 +78,16 @@ class Kernel {
         });
     }
     loadControllers() {
-        const controllersDir = path_1.default.join(__dirname, 'controllers');
-        fs_1.default.readdirSync(controllersDir).forEach((file) => {
+        if (!fs_1.default.existsSync(this.controllersDir)) {
+            Logger_1.default.warn(`Controllers directory not found at ${this.controllersDir}`);
+            return;
+        }
+        fs_1.default.readdirSync(this.controllersDir).forEach((file) => {
             const extension = path_1.default.extname(file);
             const isControllerFile = ['.ts', '.js'].includes(extension) && file !== 'BaseController.ts';
             if (isControllerFile) {
-                const controllerModule = require(path_1.default.join(controllersDir, file));
+                const controllerModule = require(path_1.default.join(this.controllersDir, file));
+                console.log(path_1.default.join(this.routesDir, file));
                 if (controllerModule && controllerModule.default) {
                     const ControllerClass = controllerModule.default;
                     const controllerInstance = new ControllerClass();
@@ -130,7 +144,11 @@ class Kernel {
                                         el(req, res, next);
                                     });
                                 });
-                                serverRoutes.push(Object.assign(Object.assign({ handlers }, route), { fn: ClassPrototype[route.key].bind(ClassPrototype) }));
+                                serverRoutes.push({
+                                    handlers,
+                                    ...route,
+                                    fn: ClassPrototype[route.key].bind(ClassPrototype),
+                                });
                                 // serverRoutes.push({
                                 //   method,
                                 //   path: fullPath,
@@ -212,7 +230,7 @@ class Kernel {
         return { payload: null, index: -1 };
     }
 }
-exports.default = new Kernel().app;
+exports.Kernel = Kernel;
 // const config = {
 //   orm: 'sequelize', // or 'typeorm'
 //   // other database config options

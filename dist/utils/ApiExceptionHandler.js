@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class ApiExceptionHandler extends Error {
+    statusCode;
+    status;
+    error;
+    isOperational;
     constructor(message, statusCode, error) {
         super(message);
         this.statusCode = statusCode || 400;

@@ -24,6 +24,10 @@ function generateRoute(routePath: string) {
   const template = handlebars.compile(templateContent);
   const routeCode = template({ path: routePath });
 
+  if (!fs.existsSync('routes')) {
+    fs.mkdirSync('routes')
+  }
+
   const filePath = path.join(process.cwd(), 'routes', `${routePath}.js`);
   fs.writeFileSync(filePath, routeCode);
 
@@ -32,6 +36,9 @@ function generateRoute(routePath: string) {
 
 function generateController(name: string) {
   const controllerContent = controllerTemplate(name);
+  if (!fs.existsSync('controllers')) {
+    fs.mkdirSync('controllers')
+  }
   const filePath = path.join(
     process.cwd(),
     'controllers',

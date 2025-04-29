@@ -1,17 +1,13 @@
 {
   "name": "express-custom-template",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
-  "main": "index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "main": "dist/index.js",
+  "files": ["dist", "bin", "src"],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "command": "ts-node src/command/cli.ts",
-    "dev": "nodemon index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [],
   "author": "owujib",
@@ -49,5 +45,15 @@
     "sequelize": "^6.37.3",
     "sequelize-typescript": "^2.1.6",
     "typeorm": "^0.3.20"
+  },
+   ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+
+  "bin": {
+    "simple-express": "./dist/command/cli.js", 
+   "kernel-init": "./bin/index.js"
   }
 }
